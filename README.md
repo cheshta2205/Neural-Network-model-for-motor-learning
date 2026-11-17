@@ -8,6 +8,30 @@ contextual-inference paper. The model: a recurrent **MTL** module infers a laten
 Every script can **train from scratch** or **load the included checkpoint**
 (`--skip-train`). Checkpoints are small (~1–2 MB) and committed, so all figures
 reproduce out of the box.
+## Hippocampal and cerebellar sections — `published_simulations/`
+
+Final code for the SRO, OLM/ORM and Rochefort sections, with the checkpoints and
+cached results needed to regenerate every figure without retraining. See its own
+README for run commands.
+
+| Paper figure | What it shows | Script |
+|---|---|---|
+| Figure 7a,b | OLM/ORM paradigm schematics | `olm_orm_task_schematic.py` |
+| Figure 7c–f | Prediction error, changed vs unchanged object | `gap_rows_fig.py` |
+| Figure 7g,h | Preference index vs perturbation strength | `olm_orm_final.py --figures` |
+| Figure 8a | SRO task table | `sro_task_schematic.py` |
+| Figure 8b | MTL state geometry in PCA space | `sro_geometry_pca.py` |
+| Figure 8c,d | Context decoding and CCGP | `sro_paper_figs.py` |
+| ED Figure 8 | Dissociation vs perturbation strength and window | `pi_tau_half.py` |
+| ED Figure 9 | Robustness to the observation model | `olm_orm_robustness_sweep.py --figure` |
+| ED Figure 10 | Place-field stability under cerebellar perturbation | `roche_pooled_final.py` |
+| ED Figure 11 | Geometry across MTL and cerebellar layers | `sro_paper_figs.py` |
+
+All SRO scripts require `SRO_VARIANT=bernardi`; without it they run a different
+task table and the numbers will not match the paper.
+
+Superseded SRO scripts from an earlier draft are kept in `legacy/` for
+provenance and are not used for any figure in the current paper.
 
 ## Setup
 
@@ -22,12 +46,7 @@ pip install -r requirements.txt
 | **1** | MTL infers latent context (decoding, confusion, decoder geometry) | `ECtoCB_train_MSE_12C.py`, `MLP_12c.py`, `replot_mtl_geometry.py` | `paper/checkpoints/ectocb_12ctx_seq80_z64/…seed0.pt` |
 | **2** | Savings (SAC controller) | **External — see note below** | — |
 | **3** | Structure learning / zero-shot generalization | `structure_learning_rot.py`, `structure_learning_drift.py` | `paper/checkpoints/structure_learning_{rot_0_45_90,rot_0_90,drift_0p4_0p8_1p2}.pt` |
-| **4** | Context inference from reward-prediction error (SRO) | `context_inference_sro_rpe.py` | `checkpoints/context_inference_sro_rpe.pt` |
-| **5** | MTL vs ventral hippocampus (motor task) | `geometry_section1_vhpc.py`, `make_context_3angle_section1.py` | (uses the 12ctx checkpoint) |
-| **6** | MTL vs HPC/PFC geometry (SRO; Bernardi 2020) | `geometry_sro.py`, `geometry_sro_panels.py` | (uses the SRO checkpoint) |
-
-Diagnostic: `within_context_decode_sro.py` — within-context vs pooled vs cross-context
-(CCGP) decode, demonstrating the value/action XOR structure in the SRO task.
+| **4** | MTL vs ventral hippocampus (motor task) | `geometry_section1_vhpc.py`, `make_context_3angle_section1.py` | (uses the 12ctx checkpoint) |
 
 ### Fig 2 (savings) — external
 The savings experiment (Soft Actor–Critic controller, episodes-to-criterion across
@@ -49,18 +68,11 @@ python structure_learning_rot.py   --skip-train --baselines --matched-oracle   #
 python structure_learning_rot.py   --skip-train --train-angles 0 90            # leave-one-out (endpoints only)
 python structure_learning_drift.py --skip-train --baselines --matched-oracle   # drift
 
-# --- Fig 4: context inference from reward-prediction error ---
-python context_inference_sro_rpe.py --skip-train
 
 # --- Fig 5: MTL vs ventral hippocampus (motor) ---
 python geometry_section1_vhpc.py
 python make_context_3angle_section1.py
 
-# --- Fig 6: MTL vs HPC/PFC geometry (SRO) ---
-python geometry_sro.py
-python geometry_sro_panels.py
-python within_context_decode_sro.py       # (diagnostic: XOR / within-vs-pooled decode)
-```
 
 Or run everything: `bash make_all_figures.sh`.
 
